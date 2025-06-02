@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.dongbat.jbump.Point;
+import io.github.jogo.Enums.EEnemyTypes;
 import io.github.jogo.Enums.ETileType;
 import io.github.jogo.Interfaces.*;
 import io.github.jogo.Objects.*;
@@ -99,9 +100,9 @@ public class World {
         int fimX2 = WIDTH-3;
         int fimY2 = 1;
 
-        EnemyFinalBoss boss = new EnemyFinalBoss(fimX * TILE_SIZE, fimY * TILE_SIZE, WIDTH, HEIGHT, this);
+        Enemy boss = new Enemy(fimX * TILE_SIZE, fimY * TILE_SIZE, WIDTH, HEIGHT, this, EEnemyTypes.Boss);
         addObject(boss);
-        EnemyFinalBoss boss1 = new EnemyFinalBoss(fimX1 * TILE_SIZE, fimY1 * TILE_SIZE, WIDTH, HEIGHT, this);
+        Enemy boss1 = new Enemy(fimX1 * TILE_SIZE, fimY1 * TILE_SIZE, WIDTH, HEIGHT, this, EEnemyTypes.Boss);
         addObject(boss1);
 
 
@@ -406,7 +407,7 @@ public class World {
             int ty = rand.nextInt(HEIGHT);
 
             if (isWalkable(tx, ty) && !isOccupied(tx, ty, null)) {
-                Enemy enemy = new Enemy(tx * TILE_SIZE, ty * TILE_SIZE, WIDTH, HEIGHT, this);
+                Enemy enemy = new Enemy(tx * TILE_SIZE, ty * TILE_SIZE, WIDTH, HEIGHT, this, EEnemyTypes.Standard);
                 addObject(enemy);
                 quantidade--;
             }

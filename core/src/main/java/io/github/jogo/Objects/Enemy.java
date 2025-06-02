@@ -3,6 +3,7 @@ package io.github.jogo.Objects;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
+import io.github.jogo.Enums.EEnemyTypes;
 import io.github.jogo.Interfaces.*;
 import io.github.jogo.PathFinder;
 import io.github.jogo.Screens.*;
@@ -15,13 +16,24 @@ public class Enemy extends AObject implements IRenderable, IUpdatable {
     private float moveCooldown = 1.0f;
     private float timeSinceLastMove = 0f;
     private Texture texture;
+    private EEnemyTypes type;
+    private World world;
 
-    public Enemy(float x, float y, int width, int height, World world) {
+    public Enemy(float x, float y, int width, int height, World world,EEnemyTypes type) {
         super(x, y, width, height,world);
-
+        this.type = type;
+        this.world = world;
 
         this.spawnPoint = new Vector2(x, y);
-        this.texture = new Texture("assets/v01/vilan.png"); // Substitui conforme necessário
+        switch (this.type){
+            case Boss:
+                this.texture = new Texture("assets/v01/enemyboss.png"); // Substitui conforme necessário
+                break;
+            case Standard:
+                this.texture = new Texture("assets/v01/vilan.png"); // Substitui conforme necessário
+                break;
+
+        }
 
     }
     public void repositionToValidTile(World world) {
@@ -43,7 +55,25 @@ public class Enemy extends AObject implements IRenderable, IUpdatable {
         if (timeSinceLastMove < moveCooldown) return;
 
         timeSinceLastMove = 0f;
+        if(this.type == EEnemyTypes.Boss){
+            Vector2 start = new Vector2(world.getTileX(this.getX()), world.getTileY(this.getY()));
+            Vector2 end = new Vector2(world.getTileX(world.player.getX()), world.getTileY(world.player.getY()));
 
+            List<Vector2> path = PathFinder.findPath(world, start, end);
+
+            if (path != null && path.size() > 1) {
+                Vector2 next = path.get(1); // ignora o ponto 0 (posição atual)
+                float targetX = next.x * World.TILE_SIZE;
+                float targetY = next.y * World.TILE_SIZE;
+                // Movimento simples: teleporta passo a passo
+
+                this.setPosition(targetX, targetY);
+
+            }
+
+            if (this.getObjectrect().overlaps(world.player.getObjectrect()))
+                world.player.onCollision(this);
+        }
     }
 
     private boolean isBlockingPlayer(Vector2 nextTile, Vector2 playerPos) {
@@ -60,6 +90,16 @@ public class Enemy extends AObject implements IRenderable, IUpdatable {
      /*   if (other instanceof Player) {
             System.out.println("⚠ Inimigo colidiu com o jogador!");
         }*/
+    }
+
+
+    @Override
+    public void notifyPositionChanged() {
+        if (world != null) {
+            if (this.getObjectrect().overlaps(world.player.getObjectrect()))
+                world.player.onCollision(this);
+        }
+
     }
 }
 

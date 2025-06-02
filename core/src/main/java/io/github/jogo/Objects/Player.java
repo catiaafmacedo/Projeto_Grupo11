@@ -71,7 +71,7 @@ public class Player extends AObject implements IUpdatable, IRenderable {
     @Override
     public void onCollision(AObject other) {
         if (damagable) {
-            if ((other instanceof Enemy)||(other instanceof EnemyFinalBoss)) {
+            if (other instanceof Enemy) {
                 world.playdamage();
                 takeDamage(1);
             }
