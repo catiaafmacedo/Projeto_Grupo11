@@ -1,31 +1,23 @@
 package io.github.jogo.Screens;
-
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.dongbat.jbump.Point;
+
 import io.github.jogo.Enums.EEnemyTypes;
 import io.github.jogo.Enums.ETileType;
 import io.github.jogo.Interfaces.*;
 import io.github.jogo.Objects.*;
 import io.github.jogo.Scenes.*;
-
-import java.sql.Ref;
 import java.util.*;
 
-public class World {
+public class World implements Screen {
     public static final int TILE_SIZE = 64;
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
@@ -34,13 +26,14 @@ public class World {
     public static final  com.badlogic.gdx.audio.Music LifeMusic  = Gdx.audio.newMusic(Gdx.files.internal("assets/sounds/energy-drink.mp3"));
 
     public boolean soundEnabled;
+    private Game game;
 
     private ETileType[][] map;
     private boolean[][] visited;
-    private Random random = new Random();
+    private final Random random = new Random();
 
     private OrthographicCamera camera;
-    private SpriteBatch spriteBatch;
+    private final SpriteBatch spriteBatch = new SpriteBatch();;
     private BitmapFont font;
 
     public Player player;
@@ -65,6 +58,8 @@ public class World {
 
 
     public World() {
+
+        InputManager.init();
         this.soundEnabled = prefs.getBoolean("soundEnabled", true);
         //this.soundEnabled =false;
         map = new ETileType[WIDTH][HEIGHT];
@@ -74,7 +69,7 @@ public class World {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        spriteBatch = new SpriteBatch();
+
 
         damageSound.setOnCompletionListener(music -> damageSoundPlaying = false);
         LifeMusic.setOnCompletionListener(LifeMusic -> LifeSoundPlaying = false);
@@ -252,7 +247,7 @@ public class World {
     }
 
     public void update(float delta) {
-        if (showMenu && Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
+      /*  if (showMenu && Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
             showMenu = false;
         }
 
@@ -275,6 +270,9 @@ public class World {
             }
             ObjToDelete.clear();
         }
+
+       */
+ // o SetScreen nao precisa do update pois fa-lo diretamente no render
     }
 
     public List<IUpdatable> getupdatables(){
@@ -282,7 +280,7 @@ public class World {
     }
 
 
-    public void render() {
+    public void render(float delta) {
         camera.position.set(player.getX(), player.getY(), 0);
         camera.update();
         spriteBatch.setProjectionMatrix(camera.combined);
@@ -317,6 +315,32 @@ public class World {
             renderMini(); // este método só desenha o mapa, jogador e inimigos (sem HUD)
         });
         pipRenderer.drawPIP();
+
+        // Implementa o setscreen
+
+        if (showMenu && Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
+            showMenu = false;
+        }
+
+        if (gameOver) {
+            restartTimer += delta;
+            if (restartTimer >= 3f) {
+                restartGame();
+                return;
+            }
+        }
+
+        if (gameOver) return;
+
+        for (IUpdatable obj : updatables) {
+            obj.update(delta,this);
+        }
+        if (ObjToDelete.size()>0) {
+            for (IUpdatable obj : ObjToDelete) {
+                this.removeObject((AObject) obj);
+            }
+            ObjToDelete.clear();
+        }
 
 
     }
@@ -459,9 +483,19 @@ public class World {
         gameOver = false;
         restartTimer = 0f;
     }
-
+    @Override
+    public void show() {}
+    @Override
+    public void hide() {}
+    @Override
+    public void resume() {}
+    @Override
+    public void pause() {}
+    @Override
+    public void dispose() {}
+    @Override
+    public void resize(int width, int height) {}
 }
-
 
 
 

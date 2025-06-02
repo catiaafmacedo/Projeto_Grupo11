@@ -3,6 +3,8 @@ package io.github.jogo.Scenes;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
+import static java.lang.System.*;
+
 public class InputManager {
 
     public static void init() {

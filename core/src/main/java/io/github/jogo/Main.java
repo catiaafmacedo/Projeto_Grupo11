@@ -6,23 +6,25 @@ import com.badlogic.gdx.graphics.GL20;
 import io.github.jogo.Scenes.*;
 import io.github.jogo.Screens.*;
 
+import com.badlogic.gdx.Game;
 
-public class Main extends ApplicationAdapter {
+public class Main extends Game  {
     private World world;
 
     @Override
     public void create() {
-        InputManager.init();
-        world = new World();
+
+        this.setScreen(new MainMenuScreen(this));
+        //world = new World();
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        world.update(delta);
-        world.render();
+        super.render(); // ESSENCIAL: chama render() do ecrã atual
+      //  world.update(delta);
+      //  world.render(delta);
     }
 
 
