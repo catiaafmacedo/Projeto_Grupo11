@@ -3,9 +3,10 @@ package io.github.jogo.Screens;
 import java.util.Random;
 
 public class Mazepreview {
-    private int width, height;
-    private boolean[][] maze;
-    private Random rand = new Random();
+    private final int width;
+    private final int height;
+    private final boolean[][] maze;
+    private final Random rand = new Random();
 
     public Mazepreview(int width, int height) {
         this.width = width;

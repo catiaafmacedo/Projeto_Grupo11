@@ -11,20 +11,24 @@ import com.badlogic.gdx.Game;
 public class Main extends Game  {
     private World world;
 
+
     @Override
     public void create() {
 
         this.setScreen(new MainMenuScreen(this));
+        //this.setScreen(new GameOverScreen(this));
         //world = new World();
     }
 
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render(); // ESSENCIAL: chama render() do ecrã atual
-      //  world.update(delta);
-      //  world.render(delta);
+        //  world.update(delta);
+        //  world.render(delta);
+
     }
 
 

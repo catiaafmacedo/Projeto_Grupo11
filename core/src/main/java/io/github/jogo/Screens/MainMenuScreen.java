@@ -2,7 +2,6 @@ package io.github.jogo.Screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,22 +11,21 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.jogo.Settings;
+import io.github.jogo.Utils.Settings;
 
 public class MainMenuScreen implements Screen {
 
-    private Stage stage;
-    private Game game;
-    private boolean soundOn = true;
-    private Mazepreview previewMaze;
-    private Texture wallTex, floorTex;
-    private SpriteBatch batch;
+    private final Stage stage;
+    private boolean soundOn;
+    private final Mazepreview previewMaze;
+    private final Texture wallTex;
+    private final Texture floorTex;
+    private final SpriteBatch batch;
 
-    Preferences prefs = Gdx.app.getPreferences("GameSettings");
+
 
     public MainMenuScreen(Game game) {
-        this.soundOn = prefs.getBoolean("soundEnabled", true);
-        this.game = game;
+        this.soundOn = Settings.isSoundEnabled();
 
         previewMaze = new Mazepreview(20, 15); // pequeno labirinto
         wallTex = new Texture("assets/v01/wall.png");
@@ -54,7 +52,7 @@ public class MainMenuScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 //game.setScreen(new World(game)); // substitui com tua classe World
-                game.setScreen(new World()); // substitui com tua classe World
+                game.setScreen(new World(game)); // substitui com tua classe World
             }
         });
 
@@ -105,8 +103,6 @@ public class MainMenuScreen implements Screen {
         batch.setColor(1, 1, 1, 0.2f); // opacidade baixa
 
         int tileSize = 64;
-        //int startX = Gdx.graphics.getWidth() - previewMaze.getWidth() * tileSize - 10;
-        //int startY = 10;
         int startX = 0;
         int startY = 0;
 

@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import io.github.jogo.Enums.EEnemyTypes;
@@ -26,21 +25,16 @@ public class World implements Screen {
     public static final  com.badlogic.gdx.audio.Music LifeMusic  = Gdx.audio.newMusic(Gdx.files.internal("assets/sounds/energy-drink.mp3"));
 
     public boolean soundEnabled;
-    private Game game;
 
-    private ETileType[][] map;
-    private boolean[][] visited;
-    private final Random random = new Random();
+    private final ETileType[][] map;
 
-    private OrthographicCamera camera;
-    private final SpriteBatch spriteBatch = new SpriteBatch();;
-    private BitmapFont font;
+    private final OrthographicCamera camera;
+    private final SpriteBatch spriteBatch = new SpriteBatch();
 
     public Player player;
-    private List<IRenderable> renderables = new ArrayList<>();
-    private List<IUpdatable> updatables = new ArrayList<>();
-    private List<IUpdatable> ObjToDelete = new ArrayList<>();
-    private List<Enemy> enemies = new ArrayList<>();
+    private final List<IRenderable> renderables = new ArrayList<>();
+    private final List<IUpdatable> updatables = new ArrayList<>();
+    private final List<IUpdatable> ObjToDelete = new ArrayList<>();
 
     Texture floortext = new Texture("assets/v01/floor.png"); // ou outra apropriada
     private float restartTimer = 0f;
@@ -51,21 +45,20 @@ public class World implements Screen {
 
     Preferences prefs = Gdx.app.getPreferences("GameSettings");
 
-    private Hud hud;
-    private PIPRenderer pipRenderer;
+    private final Hud hud;
+    private final PIPRenderer pipRenderer;
+    public Game game;
 
 
 
-
-    public World() {
+    public World(Game game) {
 
         InputManager.init();
         this.soundEnabled = prefs.getBoolean("soundEnabled", true);
         //this.soundEnabled =false;
         map = new ETileType[WIDTH][HEIGHT];
-        visited = new boolean[WIDTH][HEIGHT];
         generateMaze();
-
+        this.game = game;
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -92,8 +85,6 @@ public class World implements Screen {
         int fimY = HEIGHT - 3;
         int fimX1 = 1;
         int fimY1 = HEIGHT - 3;
-        int fimX2 = WIDTH-3;
-        int fimY2 = 1;
 
         Enemy boss = new Enemy(fimX * TILE_SIZE, fimY * TILE_SIZE, WIDTH, HEIGHT, this, EEnemyTypes.Boss);
         addObject(boss);
@@ -197,42 +188,6 @@ public class World implements Screen {
     }
 
 
-
-
-    private void carve(int x, int y) {
-        visited[x][y] = true;
-        map[x][y] = ETileType.FLOOR;
-
-        int[] dx = {0, 1, 0, -1};
-        int[] dy = {-1, 0, 1, 0};
-        int[] dirs = {0, 1, 2, 3};
-        shuffle(dirs);
-
-        for (int i = 0; i < 4; i++) {
-            int nx = x + dx[dirs[i]] * 2;
-            int ny = y + dy[dirs[i]] * 2;
-
-            if (inBounds(nx, ny) && !visited[nx][ny]) {
-                map[x + dx[dirs[i]]][y + dy[dirs[i]]] = ETileType.FLOOR;
-                carve(nx, ny);
-            }
-        }
-    }
-
-    private void shuffle(int[] array) {
-        for (int i = 0; i < array.length; i++) {
-            int r = random.nextInt(array.length);
-            int tmp = array[i];
-            array[i] = array[r];
-            array[r] = tmp;
-        }
-    }
-
-
-    private boolean inBounds(int x, int y) {
-        return x > 0 && y > 0 && x < WIDTH - 1 && y < HEIGHT - 1;
-    }
-
     public void addDeleteObj(AObject obj) {
         ObjToDelete.add(obj);
     }
@@ -246,35 +201,6 @@ public class World implements Screen {
         }
     }
 
-    public void update(float delta) {
-      /*  if (showMenu && Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
-            showMenu = false;
-        }
-
-        if (gameOver) {
-            restartTimer += delta;
-            if (restartTimer >= 3f) {
-                restartGame();
-                return;
-            }
-        }
-
-        if (gameOver) return;
-
-        for (IUpdatable obj : updatables) {
-            obj.update(delta,this);
-        }
-        if (ObjToDelete.size()>0) {
-            for (IUpdatable obj : ObjToDelete) {
-                this.removeObject((AObject) obj);
-            }
-            ObjToDelete.clear();
-        }
-
-       */
- // o SetScreen nao precisa do update pois fa-lo diretamente no render
-    }
-
     public List<IUpdatable> getupdatables(){
         return updatables;
     }
@@ -285,35 +211,17 @@ public class World implements Screen {
         camera.update();
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
-                switch (map[x][y]) {
-                    case WALL:
-                        spriteBatch.setColor(Color.DARK_GRAY);
-                        break;
-                    case FLOOR:
-                        spriteBatch.setColor(Color.LIGHT_GRAY);
-                        break;
-                    case COLLECTABLE:
-                        spriteBatch.setColor(Color.YELLOW);
-                        break;
-                    case ENEMY:
-                        spriteBatch.setColor(Color.RED);
-                        break;
-                }
-                //spriteBatch.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                spriteBatch.draw(floortext, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            }
-        }
+
+        printfloor(spriteBatch);
+
         for (IRenderable obj : renderables)
             obj.render(spriteBatch);
 
         spriteBatch.end();
         hud.render(spriteBatch);
 
-        pipRenderer.capture(() -> {
-            renderMini(); // este método só desenha o mapa, jogador e inimigos (sem HUD)
-        });
+        // este método só desenha o mapa, jogador e inimigos (sem HUD)
+        pipRenderer.capture(this::renderMini);
         pipRenderer.drawPIP();
 
         // Implementa o setscreen
@@ -335,7 +243,7 @@ public class World implements Screen {
         for (IUpdatable obj : updatables) {
             obj.update(delta,this);
         }
-        if (ObjToDelete.size()>0) {
+        if (!ObjToDelete.isEmpty()) {
             for (IUpdatable obj : ObjToDelete) {
                 this.removeObject((AObject) obj);
             }
@@ -344,7 +252,28 @@ public class World implements Screen {
 
 
     }
-
+    void printfloor(SpriteBatch batch){
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                switch (map[x][y]) {
+                    case WALL:
+                        spriteBatch.setColor(Color.DARK_GRAY);
+                        break;
+                    case FLOOR:
+                        spriteBatch.setColor(Color.LIGHT_GRAY);
+                        break;
+                    case COLLECTABLE:
+                        spriteBatch.setColor(Color.YELLOW);
+                        break;
+                    case ENEMY:
+                        spriteBatch.setColor(Color.RED);
+                        break;
+                }
+                //spriteBatch.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                batch.draw(floortext, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
     public void renderMini() {
         // Configura uma câmara que mostra o mapa inteiro
         OrthographicCamera miniCam = new OrthographicCamera();
@@ -355,35 +284,9 @@ public class World implements Screen {
 
         spriteBatch.begin();
 
-        // 1. Desenha o background (se aplicável)
-       /* if (backgroundTexture != null) {
-            batch.draw(backgroundTexture, 0, 0, WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE);
-        }*/
 
         // 2. Desenha o mapa do mundo
-        for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
-                ETileType tile = this.getTile(x, y);
-                if (tile != null ) {
-                    switch (map[x][y]) {
-                        case WALL:
-                            spriteBatch.setColor(Color.DARK_GRAY);
-                            break;
-                        case FLOOR:
-                            spriteBatch.setColor(Color.LIGHT_GRAY);
-                            break;
-                        case COLLECTABLE:
-                            spriteBatch.setColor(Color.YELLOW);
-                            break;
-                        case ENEMY:
-                            spriteBatch.setColor(Color.RED);
-                            break;
-                    }
-                    //spriteBatch.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    spriteBatch.draw(floortext, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                }
-            }
-        }
+        printfloor(spriteBatch);
 
         // 3. Desenha todos os objetos do mundo (inimigos, reforços, etc.)
         for (IRenderable obj : renderables) {
@@ -398,18 +301,18 @@ public class World implements Screen {
         spriteBatch.end();
     }
 
-    public boolean isOccupied(float tileX, float tileY, AObject requester) {
+    public boolean isNotOccupied(float tileX, float tileY, AObject requester) {
         for (IRenderable obj : renderables) {
             if (obj instanceof AObject) {
                 AObject other = (AObject) obj;
                 if (other != requester) {
                     int ox = (int)(other.getX() / TILE_SIZE);
                     int oy = (int)(other.getY() / TILE_SIZE);
-                    if (ox == tileX && oy == tileY) return true;
+                    if (ox == tileX && oy == tileY) return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     public ETileType getTile(int x, int y) {
@@ -430,7 +333,7 @@ public class World implements Screen {
             int tx = rand.nextInt(WIDTH);
             int ty = rand.nextInt(HEIGHT);
 
-            if (isWalkable(tx, ty) && !isOccupied(tx, ty, null)) {
+            if (isWalkable(tx, ty) && isNotOccupied(tx, ty, null)) {
                 Enemy enemy = new Enemy(tx * TILE_SIZE, ty * TILE_SIZE, WIDTH, HEIGHT, this, EEnemyTypes.Standard);
                 addObject(enemy);
                 quantidade--;
@@ -447,8 +350,8 @@ public class World implements Screen {
             int tx = rand.nextInt(WIDTH);
             int ty = rand.nextInt(HEIGHT);
 
-            if (isWalkable(tx, ty) && !isOccupied(tx, ty, null)) {
-                ReforcoVida reforco = new ReforcoVida(tx * TILE_SIZE, ty * TILE_SIZE, WIDTH, HEIGHT, this);
+            if (isWalkable(tx, ty) && isNotOccupied(tx, ty, null)) {
+                Collectables reforco = new Collectables(tx * TILE_SIZE, ty * TILE_SIZE, WIDTH, HEIGHT, this);
                 addObject(reforco);
                 quantidade--;
             }
@@ -456,13 +359,13 @@ public class World implements Screen {
         }
     }
     public void removeObject(AObject object) {
-        if (object instanceof IRenderable) {
+        if (object != null) {
             renderables.remove(object);
         }
-        if (object instanceof IUpdatable) {
+        if (object != null) {
             updatables.remove(object);
         }
-        object.dispose(); // limpa recursos
+        Objects.requireNonNull(object).dispose(); // limpa recursos
 
     }
 
@@ -477,11 +380,14 @@ public class World implements Screen {
     private void restartGame() {
         //player = new Player(64, 64, TILE_SIZE, TILE_SIZE);
         player = new Player(TILE_SIZE, TILE_SIZE,WIDTH,HEIGHT,this);
-        enemies.clear();
+
         spawnEnemies(5);
         spawnReforcosVida(3);
         gameOver = false;
         restartTimer = 0f;
+    }
+    public void GameOver() {
+        game.setScreen(new GameOverScreen(game));
     }
     @Override
     public void show() {}
@@ -496,6 +402,7 @@ public class World implements Screen {
     @Override
     public void resize(int width, int height) {}
 }
+
 
 
 

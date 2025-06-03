@@ -13,17 +13,18 @@ public abstract class AObject implements IRenderable, IUpdatable {
     private float x, y;
     public boolean update;
     protected int width, height;
-    private World world;
-    private List<PositionChangeListener> listeners = new ArrayList<>();
-
+    private final List<PositionChangeListener> listeners = new ArrayList<>();
+    public final World world;
+    //private final Vector2 spawnPoint;
 
     public AObject(float x, float y, int width, int height, World world) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.world = world;
         update = true;
+        this.world = world;
+        //this.spawnPoint = new Vector2(x, y);
     }
 
     public Rectangle getObjectrect() {
@@ -45,9 +46,9 @@ public abstract class AObject implements IRenderable, IUpdatable {
         this.setPosition(this.x,y);
     }
     public void setPosition(float x, float y) {
-            this.x = x;
-            this.y = y;
-            notifyPositionChanged();
+        this.x = x;
+        this.y = y;
+        notifyPositionChanged();
 
     }
 
@@ -55,15 +56,12 @@ public abstract class AObject implements IRenderable, IUpdatable {
         listeners.add(listener);
     }
 
-    public void removePositionChangeListener(PositionChangeListener listener) {
-        listeners.remove(listener);
-    }
-
     public void notifyPositionChanged() {
         for (PositionChangeListener listener : listeners) {
             listener.onPositionChanged(this);
         }
     }
+
 
     public void dispose() {
 

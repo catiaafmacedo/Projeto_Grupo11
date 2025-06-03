@@ -4,5 +4,6 @@ import io.github.jogo.Objects.AObject;
 
 public interface PositionChangeListener {
     void onPositionChanged(AObject source);
+    void positionChanged(AObject source);
 }
 

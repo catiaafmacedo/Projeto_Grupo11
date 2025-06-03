@@ -21,11 +21,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.jogo.Interfaces.*;
 import io.github.jogo.Screens.World;
-import io.github.jogo.Settings;
+import io.github.jogo.Utils.Settings;
 
 public class Hud implements Disposable,IUpdatable {
     public Stage stage;

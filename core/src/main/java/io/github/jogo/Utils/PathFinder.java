@@ -1,5 +1,5 @@
 
-package io.github.jogo;
+package io.github.jogo.Utils;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.jogo.Screens.*;

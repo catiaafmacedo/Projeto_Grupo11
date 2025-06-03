@@ -4,7 +4,6 @@ package io.github.jogo.Objects;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.dongbat.jbump.Item;
 import io.github.jogo.Enums.ETileType;
 import io.github.jogo.Interfaces.*;
 import io.github.jogo.Scenes.*;
@@ -13,16 +12,16 @@ import io.github.jogo.Screens.World;
 public class Player extends AObject implements IUpdatable, IRenderable {
     public final int MaxHealth = 100;
     private int health = MaxHealth;
-    private Texture texture;
-    private World world;
+    private final Texture texture;
+    private final World world;
     public boolean damagable = true;
-    private float moveCooldown = 0.5f; // tempo entre passos
     private float elapsed = 0f;
 
     public Player(float x, float y,int width,int height, World world) {
         super(x, y, width, height,world);
         this.texture = new Texture("assets/v01/superhero.png"); // coloca esta imagem no assets
         this.world = world;
+        this.addPositionChangeListener();
     }
 
     @Override
@@ -36,10 +35,12 @@ public class Player extends AObject implements IUpdatable, IRenderable {
         if (InputManager.isUp())    nextY += speed * delta;
         if (InputManager.isDown())  nextY -= speed * delta;
 
-        if (!isWall(nextX, this.getY())) this.setX( nextX);
-        if (!isWall(this.getX(), nextY)) this.setY( nextY);
+        if (isWall(nextX, this.getY())) this.setX( nextX);
+        if (isWall(this.getX(), nextY)) this.setY( nextY);
 
         elapsed += delta;
+        // tempo entre passos
+        float moveCooldown = 0.5f;
         if (elapsed < moveCooldown) return;
 
         if (world != null) {
@@ -54,10 +55,10 @@ public class Player extends AObject implements IUpdatable, IRenderable {
         int top    = (int)((py + this.height - 1) / World.TILE_SIZE);
         int bottom = (int)(py / World.TILE_SIZE);
 
-        return world.getTile(left, top) == ETileType.WALL ||
-               world.getTile(right, top) == ETileType.WALL ||
-               world.getTile(left, bottom) == ETileType.WALL ||
-               world.getTile(right, bottom) == ETileType.WALL;
+        return world.getTile(left, top) != ETileType.WALL &&
+            world.getTile(right, top) != ETileType.WALL &&
+            world.getTile(left, bottom) != ETileType.WALL &&
+            world.getTile(right, bottom) != ETileType.WALL;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class Player extends AObject implements IUpdatable, IRenderable {
                 world.playdamage();
                 takeDamage(1);
             }
-            if (other instanceof ReforcoVida) {
+            if (other instanceof Collectables) {
                 world.playItem();
                 takeItem(5);
                 world.addDeleteObj(other);
@@ -91,6 +92,7 @@ public class Player extends AObject implements IUpdatable, IRenderable {
         health -= amount;
         System.out.println("⚠ Jogador perdeu " + amount + " de vida! Vida atual: " + health);
         if (health <= 0) {
+            world.GameOver();
             System.out.println("💀 Game Over!");
         }
     }
@@ -98,27 +100,33 @@ public class Player extends AObject implements IUpdatable, IRenderable {
 
     public void takeItem(int amount) {
         health += amount;
-        System.out.println("⚠ Jogador perdeu " + amount + " de vida! Vida atual: " + health);
-        if (health <= 0) {
-            System.out.println("💀 Game Over!");
-        }
+        System.out.println("⚠ Jogador ganhou " + amount + " de vida! Vida atual: " + health);
+
 
     }
 
-    @Override
-    public void notifyPositionChanged() {
-        if (world != null) {
-            for (IUpdatable obj : world.getupdatables()) {
-                if (obj instanceof Enemy)
-                    if (((Enemy) obj).getObjectrect().overlaps(this.getObjectrect()))
-                        this.onCollision((Enemy) obj);
-                if (obj instanceof ReforcoVida)
-                    if (((ReforcoVida) obj).getObjectrect().overlaps(this.getObjectrect())) {
-                        this.onCollision((ReforcoVida) obj);
-                    }
+    public void addPositionChangeListener(){
+        this.addPositionChangeListener(new PositionChangeListener() {
+            @Override
+            public void onPositionChanged(AObject source) {
+                positionChanged(source);
             }
-        }
 
+            @Override
+            public void positionChanged(AObject player) {
+                for (IUpdatable obj : world.getupdatables()) {
+                    if (obj instanceof Enemy)
+                        if (((Enemy) obj).getObjectrect().overlaps(player.getObjectrect()))
+                            player.onCollision((Enemy) obj);
+                    if (obj instanceof Collectables)
+                        if (((Collectables) obj).getObjectrect().overlaps(player.getObjectrect())) {
+                            player.onCollision((Collectables) obj);
+                        }
+                }
+            }
+        });
     }
+
+
 
 }

@@ -1,4 +1,4 @@
-package io.github.jogo;
+package io.github.jogo.Utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
