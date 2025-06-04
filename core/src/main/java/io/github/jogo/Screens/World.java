@@ -97,8 +97,11 @@ public class World implements Screen {
         addObject(hud);
         Gdx.input.setInputProcessor(hud.stage);
 
-        pipRenderer = new PIPRenderer(200, 150, 10, 10); // 200x150 no canto inferior direito
-
+        //pipRenderer = new PIPRenderer(200, 150, 10, 10); // 200x150 no canto inferior direito
+        pipRenderer = new PIPRenderer.Builder()
+            .setSize(200, 150)
+            .setMargin(10, 10)
+            .build();
     }
 
     public void playdamage(){

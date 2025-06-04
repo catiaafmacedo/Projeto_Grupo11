@@ -68,4 +68,28 @@ public class PIPRenderer implements Disposable {
         pipBatch.dispose();
         if (pipTexture != null) pipTexture.dispose();
     }
+    // ===== Builder Pattern =====
+
+    public static class Builder {
+        private int pipWidth = 320;
+        private int pipHeight = 180;
+        private int marginX = 20;
+        private int marginY = 20;
+
+        public Builder setSize(int width, int height) {
+            this.pipWidth = width;
+            this.pipHeight = height;
+            return this;
+        }
+
+        public Builder setMargin(int x, int y) {
+            this.marginX = x;
+            this.marginY = y;
+            return this;
+        }
+
+        public PIPRenderer build() {
+            return new PIPRenderer(pipWidth, pipHeight, marginX, marginY);
+        }
+    }
 }
