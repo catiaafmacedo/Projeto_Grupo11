@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.jogo.Utils.Settings;
+import io.github.jogo.game.World;
+import io.github.jogo.ui.Mazepreview;
 
 public class MainMenuScreen implements Screen {
 
@@ -27,7 +29,9 @@ public class MainMenuScreen implements Screen {
     public MainMenuScreen(Game game) {
         this.soundOn = Settings.isSoundEnabled();
 
-        previewMaze = new Mazepreview(20, 15); // pequeno labirinto
+
+        previewMaze = Mazepreview.randomWithBorderMaze(20, 15);
+
         wallTex = new Texture("assets/v01/wall.png");
         floorTex = new Texture("assets/v01/floor.png");
 

@@ -1,4 +1,4 @@
-package io.github.jogo.Scenes;
+package io.github.jogo.ui;
 
 
 import com.badlogic.gdx.Gdx;
@@ -22,7 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import io.github.jogo.Interfaces.*;
-import io.github.jogo.Screens.World;
+import io.github.jogo.game.World;
 import io.github.jogo.Utils.Settings;
 
 public class Hud implements Disposable,IUpdatable {
@@ -32,24 +32,19 @@ public class Hud implements Disposable,IUpdatable {
     public Table table;
     private Integer worldTimer;
     private float timeCount;
-    private static Integer score;
     // Now we create our widgets. Our widgets will be labels, essentially text, that allow us to display Game Information
-    private Label countdownLabel;
+    private final Label countdownLabel;
     static Label scoreLabel;
-    private Label timeLabel;
-    private Label levelLabel;
-    private Label worldLabel;
-    private Label marioLabel;
-    private BitmapFont white;
-    private Label healthLabel;
+    private final Label healthLabel;
+    private final Label LevelLabel;
 
     //progressbar
-    private ProgressBar scoreBar;
-    private Texture texFillGreen, texFillYellow, texFillRed;
-    private TextureRegionDrawable fillDrawableGreen, fillDrawableYellow, fillDrawableRed;
-    private int BAR_WIDTH = 200, BAR_HEIGHT = 30;
-    private enum HealthColor { GREEN, YELLOW, RED }
-    private HealthColor currentColor = null;
+    private final ProgressBar scoreBar;
+    private final Texture texFillGreen;
+    private final Texture texFillYellow;
+    private final Texture texFillRed;
+    private final int BAR_WIDTH = 200;
+    private final int BAR_HEIGHT = 30;
 
     private ImageButton soundButton;
     Preferences prefs = Gdx.app.getPreferences("GameSettings");
@@ -77,10 +72,10 @@ public class Hud implements Disposable,IUpdatable {
 
         countdownLabel = new Label(String.format("%03d", worldTimer), labelStyle);
         scoreLabel = new Label(String.format("%06d",world.player.getHealth()), labelStyle);
-        timeLabel = new Label("Tempo", labelStyle);
-        levelLabel = new Label("Labirinto easy", labelStyle);
-        worldLabel = new Label("Ronda 1", labelStyle);
-        marioLabel = new Label("SCORE:", labelStyle);
+        Label timeLabel = new Label("Tempo", labelStyle);
+        Label typeLabel = new Label("", labelStyle);
+        LevelLabel = new Label("Nivel "+world.nivel, labelStyle);
+
 
         Pixmap bgPixmap = new Pixmap(BAR_WIDTH, BAR_HEIGHT, Pixmap.Format.RGBA8888);
         bgPixmap.setColor(Color.DARK_GRAY);
@@ -91,9 +86,7 @@ public class Hud implements Disposable,IUpdatable {
         texFillYellow = createColorTexture(Color.YELLOW);
         texFillRed = createColorTexture(Color.RED);
 
-        fillDrawableGreen = new TextureRegionDrawable(new TextureRegion(texFillGreen));
-        fillDrawableYellow = new TextureRegionDrawable(new TextureRegion(texFillYellow));
-        fillDrawableRed = new TextureRegionDrawable(new TextureRegion(texFillRed));
+        TextureRegionDrawable fillDrawableGreen = new TextureRegionDrawable(new TextureRegion(texFillGreen));
 
         ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
         style.background = backgroundDrawable;
@@ -117,16 +110,14 @@ public class Hud implements Disposable,IUpdatable {
         soundBarTable.add(soundButton).size(32, 32).padRight(10);
         soundBarTable.add(scoreBar).width(BAR_WIDTH).height(BAR_HEIGHT).expandX();
         table.add(soundBarTable).expandX().padTop(10).left();
-        //table.add(soundButton).size(32 , 32).pad(10).top().right();
-        //table.add(scoreBar).width(BAR_WIDTH).height(BAR_HEIGHT).expandX().padTop(10);
 
-        table.add(worldLabel).expandX().padTop(10);
+        table.add(LevelLabel).expandX().padTop(10);
         table.add(timeLabel).expandX().padTop(10);
 
         table.row();
         //table.add();
         table.add(healthLabel).padTop(5).padLeft(25);
-        table.add(levelLabel).expandX();
+        table.add(typeLabel).expandX();
         table.add(countdownLabel).expandX();
 
         stage.addActor(table);
@@ -154,8 +145,7 @@ public class Hud implements Disposable,IUpdatable {
                 soundOn = !soundOn;
 
                 // Atualiza o Drawable visível
-                Drawable newDrawable = soundOn ? soundOnDrawable : soundOffDrawable;
-                soundButton.getStyle().imageUp = newDrawable;
+                soundButton.getStyle().imageUp = soundOn ? soundOnDrawable : soundOffDrawable;
 
                 // Força o botão a redesenhar
                 soundButton.invalidate();
@@ -165,13 +155,14 @@ public class Hud implements Disposable,IUpdatable {
                 if (soundOn) {
                     Gdx.app.log("Som", "Ligado");
                     Settings.setSoundEnabled(true);
-                    world.soundEnabled = true;
-                    world.music.setVolume(1f);
+                    world.sound.setSoundEnabled(true);
+
+                    world.sound.setMusicVolume(1f);
                 } else {
                     Gdx.app.log("Som", "Desligado");
                     Settings.setSoundEnabled(false);
-                    world.soundEnabled = false;
-                    world.music.setVolume(0f);
+                    world.sound.setSoundEnabled(false);
+                    world.sound.setMusicVolume(0f);
                 }
             }
         });
@@ -187,6 +178,8 @@ public class Hud implements Disposable,IUpdatable {
             countdownLabel.setText(String.format("%03d", worldTimer));
             timeCount = 0;
         }
+
+        LevelLabel.setText("Nivel "+world.nivel);
 
         int currentHealth = Math.max(0, Math.min(100, world.player.getHealth()));
         scoreBar.setValue(currentHealth);
@@ -204,8 +197,8 @@ public class Hud implements Disposable,IUpdatable {
         }
 
         Texture fillDrawableColor = createColorTextureHealth(barcolor);
-        style.knobBefore = new TextureRegionDrawable(new TextureRegion(fillDrawableColor));;
-        style.knob = new TextureRegionDrawable(new TextureRegion(fillDrawableColor));;
+        style.knobBefore = new TextureRegionDrawable(new TextureRegion(fillDrawableColor));
+        style.knob = new TextureRegionDrawable(new TextureRegion(fillDrawableColor));
         scoreBar.setStyle(style);
 
     }
@@ -225,7 +218,7 @@ public class Hud implements Disposable,IUpdatable {
 
         int vida = 0;
         if (world.player.getHealth() > 0)
-         vida = Math.round(((float) world.player.getHealth() / world.player.MaxHealth) * BAR_WIDTH);
+            vida = Math.round(((float) world.player.getHealth() / world.player.MaxHealth) * BAR_WIDTH);
         if (world.player.getHealth() > world.player.MaxHealth) vida = BAR_WIDTH;
 
         Pixmap pixmap = new Pixmap(vida, BAR_HEIGHT, Pixmap.Format.RGBA8888);
@@ -234,12 +227,6 @@ public class Hud implements Disposable,IUpdatable {
         Texture tex = new Texture(pixmap);
         pixmap.dispose();
         return tex;
-    }
-
-
-
-    public Integer getTime(){
-        return worldTimer;
     }
 
 

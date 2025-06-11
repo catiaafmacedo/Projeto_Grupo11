@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.jogo.Utils.FrameExtractor;
+import io.github.jogo.game.World;
 
 public class GameOverScreen implements Screen {
 
@@ -94,5 +95,6 @@ public class GameOverScreen implements Screen {
         extractor.dispose();
         stage.dispose();
         skin.dispose();
+        FrameExtractor.reset();
     }
 }

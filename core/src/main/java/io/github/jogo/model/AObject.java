@@ -1,20 +1,22 @@
-package io.github.jogo.Objects;
+package io.github.jogo.model;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Disposable;
 import io.github.jogo.Interfaces.PositionChangeListener;
 import io.github.jogo.Interfaces.*;
-import io.github.jogo.Screens.World;
+import io.github.jogo.game.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class AObject implements IRenderable, IUpdatable {
+public abstract class AObject implements IRenderable, IUpdatable, Disposable {
     private float x, y;
     public boolean update;
     protected int width, height;
     private final List<PositionChangeListener> listeners = new ArrayList<>();
     public final World world;
+
     //private final Vector2 spawnPoint;
 
     public AObject(float x, float y, int width, int height, World world) {
@@ -27,6 +29,9 @@ public abstract class AObject implements IRenderable, IUpdatable {
         //this.spawnPoint = new Vector2(x, y);
     }
 
+    public void onCollision(AObject other) {
+        // Implementar em subclasses, se necessário
+    }
     public Rectangle getObjectrect() {
         return new Rectangle(x, y, width, height);
     }
@@ -35,9 +40,7 @@ public abstract class AObject implements IRenderable, IUpdatable {
     public float getY() { return y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-    public void onCollision(AObject other) {
-        // Implementar em subclasses, se necessário
-    }
+
 
     public void setX(float x) {
         this.setPosition(x,this.y);
@@ -62,7 +65,7 @@ public abstract class AObject implements IRenderable, IUpdatable {
         }
     }
 
-
+    @Override
     public void dispose() {
 
     }

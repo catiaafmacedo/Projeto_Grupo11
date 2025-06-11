@@ -2,7 +2,7 @@
 package io.github.jogo.Utils;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.jogo.Screens.*;
+import io.github.jogo.game.World;
 
 import java.util.*;
 
@@ -91,7 +91,7 @@ public class PathFinder {
         for (int[] dir : directions) {
             int newX = (int) pos.x + dir[0];
             int newY = (int) pos.y + dir[1];
-            if (world.isWalkable(newX, newY)) {
+            if (world.maze.isWalkable(newX, newY)) {
                 neighbors.add(new Vector2(newX, newY));
             }
         }

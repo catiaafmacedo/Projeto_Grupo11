@@ -1,4 +1,4 @@
-package io.github.jogo.Screens;
+package io.github.jogo.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,9 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.utils.Disposable;
 
-/**
- * Classe responsável por renderizar uma versão miniatura do jogo (PIP - Picture in Picture).
- */
 public class PIPRenderer implements Disposable {
 
     private final FrameBuffer pipBuffer;
@@ -22,7 +19,8 @@ public class PIPRenderer implements Disposable {
     private final int screenMarginX;
     private final int screenMarginY;
 
-    public PIPRenderer(int pipWidth, int pipHeight, int marginX, int marginY) {
+    // Privado: só o Builder pode criar
+    private PIPRenderer(int pipWidth, int pipHeight, int marginX, int marginY) {
         this.pipWidth = pipWidth;
         this.pipHeight = pipHeight;
         this.screenMarginX = marginX;
@@ -36,28 +34,21 @@ public class PIPRenderer implements Disposable {
         pipBuffer.begin();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        renderFunction.run(); // executa o método fornecido
-
+        renderFunction.run();
         pipBuffer.end();
         pipTexture = pipBuffer.getColorBufferTexture();
     }
 
-    /**
-     * Desenha a versão miniatura no ecrã, no canto inferior direito.
-     */
     public void drawPIP() {
         if (pipTexture == null) return;
-
         pipBatch.begin();
-        // Desenha a textura invertida verticalmente (necessário para FrameBuffer)
         pipBatch.draw(
             pipTexture,
             Gdx.graphics.getWidth() - pipWidth - screenMarginX,
             screenMarginY,
-            pipWidth,
-            pipHeight,
-            0, 0, 1, 1
+            pipWidth, pipHeight,
+            0, 0, 1, 1 // corrige flip vertical do FrameBuffer
+//            0, 1, 1, 0 // corrige flip vertical do FrameBuffer
         );
         pipBatch.end();
     }
@@ -66,8 +57,9 @@ public class PIPRenderer implements Disposable {
     public void dispose() {
         pipBuffer.dispose();
         pipBatch.dispose();
-        if (pipTexture != null) pipTexture.dispose();
+        // Não faças pipTexture.dispose()!
     }
+
     // ===== Builder Pattern =====
 
     public static class Builder {
